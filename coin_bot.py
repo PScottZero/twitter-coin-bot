@@ -2,6 +2,7 @@ import random
 import tweepy
 import requests
 import json
+import html
 from PIL import Image
 from io import BytesIO
 from os import environ
@@ -55,8 +56,8 @@ def get_random_coin(issuers):
           coin_years = get_years(coin_data)
           download_image(coin_data['obverse']['picture'], '/tmp/obv_img.jpg')
           download_image(coin_data['reverse']['picture'], '/tmp/rev_img.jpg')
-          coin_name = coin_name.split('(')[0]
-          coin_issuer = coin_data['issuer']['name']
+          coin_name = html.unescape(coin_name.split('(')[0])
+          coin_issuer = format_issuer(coin_data['issuer']['name'])
           return coin_url, coin_name, coin_years, coin_issuer
 
 
@@ -91,6 +92,14 @@ def get_json(url, params=None):
 def download_image(img_url, img_file):
   result = requests.get(img_url)
   Image.open(BytesIO(result.content)).save(img_file)
+  
+  
+def format_issuer(issuer):
+  issuer_split = issuer.split(', ')
+  if len(issuer_split) > 1:
+    return html.unescape(f'{issuer_split[1]} {issuer_split[0]}')
+  else:
+    return html.unescape(issuer)
 
 
 def coin_has_relevant_data(coin_data):
