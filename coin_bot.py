@@ -18,7 +18,7 @@ def lambda_handler(event, context):
 def tweet_random_coin():
   with open('issuers.json', 'r') as f:
     issuers = json.load(f)['issuers']
-  url, name, years = get_random_coin(issuers)
+  url, name, years, issuer = get_random_coin(issuers)
   auth = tweepy.OAuthHandler(
     environ['CONSUMER_KEY'],
     environ['CONSUMER_SECRET'],
@@ -26,7 +26,7 @@ def tweet_random_coin():
     environ['ACCESS_TOKEN_SECRET']
   )
   api = tweepy.API(auth)
-  tweet_text = f'{name}\n{years}\n{url}' if years else f'{name}\n{url}'
+  tweet_text = f'{issuer}\n{name}\n{years}\n{url}' if years else f'{name}\n{url}'
   result1 = api.media_upload('/tmp/obv_img.jpg')
   result2 = api.media_upload('/tmp/rev_img.jpg')
   media_ids = [result1.media_id, result2.media_id]
@@ -56,7 +56,8 @@ def get_random_coin(issuers):
           download_image(coin_data['obverse']['picture'], '/tmp/obv_img.jpg')
           download_image(coin_data['reverse']['picture'], '/tmp/rev_img.jpg')
           coin_name = coin_name.split('(')[0]
-          return coin_url, coin_name, coin_years
+          coin_issuer = coin_data['issuer']['name']
+          return coin_url, coin_name, coin_years, coin_issuer
 
 
 def get_years(coin_data):
@@ -98,4 +99,6 @@ def coin_has_relevant_data(coin_data):
     'obverse' in coin_data and \
     'reverse' in coin_data and \
     'picture' in coin_data['obverse'] and \
-    'picture' in coin_data['reverse']
+    'picture' in coin_data['reverse'] and \
+    'issuer' in coin_data and \
+    'name' in coin_data['issuer']
