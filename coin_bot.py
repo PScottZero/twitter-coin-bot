@@ -62,19 +62,19 @@ def get_random_coin(issuers):
 
 
 def get_years(coin_data):
-  coin_years = []
-  for year_key in ['min_year', 'max_year']:
-    if year_key in coin_data:
-      year = coin_data[year_key]
-      if year < 0:
-        year = f'{abs(year)}BCE'
-      coin_years.append(str(year))
-  if len(coin_years) == 2:
-    return f'{coin_years[0]} - {coin_years[1]}'
-  elif len(coin_years) == 1:
-    return str(coin_years[0])
+  if 'min_year' in coin_data and 'max_year' in coin_data:
+    min_year = format_year(coin_data['min_year'])
+    max_year = format_year(coin_data['max_year'])
+    if min_year != max_year:
+      return f'{min_year}-{max_year}'
+    else:
+      return min_year
   else:
     return None
+
+
+def format_year(year):
+  return f'{abs(year)}BCE' if year < 0 else str(year)
 
 
 def get_json(url, params=None):
